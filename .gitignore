@@ -1,0 +1,15 @@
+.snowpack
+build
+node_modules
+/lib/
+.bsb.lock
+.merlin
+dist
+package-lock.json
+yarn-error.log
+stats.html
+terraform
+.terraform*
+plan
+graphql_schema.json
+.graphql_ppx_cache
