@@ -1,3 +1,5 @@
+open Signal
+
 module ShowAt = {
   @react.component
   let make = Sig.component((~state: Arr.t<string>, ~idx: int) => {
