@@ -32,6 +32,8 @@ let useFlatMap = (fa, f) => Internal.use(() => flatMap(fa, f))
 
 let component = MobX.observer
 
+let transaction = MobX.runInAction
+
 let effect = (fa: sig<_, 'a>, f: 'a => option<unit => unit>): (unit => unit) => {
   let lastState = ref(() => ())
   let clean = MobX.autorun(() => {
