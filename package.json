@@ -1,4 +1,6 @@
 {
+  "name": "rescript-signal",
+  "version": "0.0.1",
   "scripts": {
     "start": "vite",
     "build": "vite build",
