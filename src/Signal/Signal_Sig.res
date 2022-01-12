@@ -33,6 +33,17 @@ let flatMap: (sig<_, 'a>, 'a => sig<'w, 'b>) => sig<'w, 'b> = (fa, f) =>
 
 let useFlatMap = (fa, f) => Signal_Internal.use(() => flatMap(fa, f))
 
+let ifM = (fp, ft, ff) =>
+  fp->flatMap(x =>
+    if x {
+      ft
+    } else {
+      ff
+    }
+  )
+
+let useIfM = (fp, ft, ff) => Signal_Internal.use(() => ifM(fp, ft, ff))
+
 let component = Signal_MobX.observer
 
 let transaction = Signal_MobX.runInAction
