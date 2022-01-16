@@ -96,31 +96,31 @@ let useTuple7 = (fa, fb, fc, fd, fe, ff, fg) =>
 
 // Map boilerplate
 let map2 = (fa: sig<_, 'a>, fb: sig<_, 'b>, f: ('a, 'b) => 'c): t<'c> =>
-  make(() => f(snd(fa()), snd(fb())))
+  make(() => f(get(fa), get(fb)))
 
 let useMap2 = (fa, fb, f) => Signal_Internal.use(() => map(fa, fb, f))
 
-let map3 = (fa, fb, fc, f) => make(() => f(get(fa()), get(fb()), get(fc())))
+let map3 = (fa, fb, fc, f) => make(() => f(get(fa), get(fb), get(fc)))
 
 let useMap3 = (fa, fb, fc, f) => Signal_Internal.use(() => map3(fa, fb, fc, f))
 
-let map4 = (fa, fb, fc, fd, f) => make(() => f(get(fa()), get(fb()), get(fc()), get(fd())))
+let map4 = (fa, fb, fc, fd, f) => make(() => f(get(fa), get(fb), get(fc), get(fd)))
 
 let useMap4 = (fa, fb, fc, fd, f) => Signal_Internal.use(() => map4(fa, fb, fc, fd, f))
 
 let map5 = (fa, fb, fc, fd, fe, f) =>
-  make(() => f(get(fa()), get(fb()), get(fc()), get(fd()), get(fe())))
+  make(() => f(get(fa), get(fb), get(fc), get(fd), get(fe)))
 
 let useMap5 = (fa, fb, fc, fd, fe, f) => Signal_Internal.use(() => map5(fa, fb, fc, fd, fe, f))
 
 let map6 = (fa, fb, fc, fd, fe, ff, f) =>
-  make(() => f(get(fa()), get(fb()), get(fc()), get(fd()), get(fe()), get(ff())))
+  make(() => f(get(fa), get(fb), get(fc), get(fd), get(fe), get(ff)))
 
 let useMap6 = (fa, fb, fc, fd, fe, ff, f) =>
   Signal_Internal.use(() => map6(fa, fb, fc, fd, fe, ff, f))
 
 let map7 = (fa, fb, fc, fd, fe, ff, fg, f) =>
-  make(() => f(get(fa()), get(fb()), get(fc()), get(fd()), get(fe()), get(ff()), get(fg())))
+  make(() => f(get(fa), get(fb), get(fc), get(fd), get(fe), get(ff), get(fg)))
 
 let useMap7 = (fa, fb, fc, fd, fe, ff, fg, f) =>
   Signal_Internal.use(() => map7(fa, fb, fc, fd, fe, ff, fg, f))
