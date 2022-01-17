@@ -33,6 +33,10 @@ let flatMap: (sig<_, 'a>, 'a => sig<'w, 'b>) => sig<'w, 'b> = (fa, f) =>
 
 let useFlatMap = (fa, f) => Signal_Internal.use(() => flatMap(fa, f))
 
+let flatten = fa => fa->flatMap(x => x)
+
+let useFlatten = fa => Signal_Internal.use(() => flatten(fa))
+
 let ifM = (fp, ft, ff) =>
   fp->flatMap(x =>
     if x {
