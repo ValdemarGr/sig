@@ -18,7 +18,22 @@ let set = (fa: t<'a>, i, a): bool =>
 // if you wish to only listen to updates at position i, use either a Dict or consider a type of Arr.t<Ref.t<'a>>
 let get = (fa: t<'a>, i) => fa->Signal_Sig.map(xs => xs->Array.get(i))
 
+let getUnsafe = (fa: t<'a>, i) =>
+  get(fa, i)->Signal_Sig.map(x => {
+    switch x {
+    | None =>
+      Js.Exn.raiseError(
+        `getUnsafe: index ${i->Int.toString} out of bounds of ${Signal_Sig.transaction(() =>
+            fa->Signal_Sig.get->Array.length->Int.toString
+          )}`,
+      )
+    | Some(x) => x
+    }
+  })
+
 let useGet = (fa: t<'a>, i) => Signal_Internal.use(() => get(fa, i))
+
+let useGetUnsafe = (fa: t<'a>, i) => Signal_Internal.use(() => getUnsafe(fa, i))
 
 let map = (fa: t<'a>, f) => fa->Signal_Sig.map(xs => xs->Array.map(f))
 
