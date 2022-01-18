@@ -2,7 +2,8 @@ type t<'a> = Signal_Sig.sig<'a => unit, 'a>
 
 let fromRef = (r: ref<'a>): t<'a> => {
   let r = Signal_MobX.observable(r)
-  (() => x => r := x, () => r.contents)
+  let set = x => r := x
+  (() => set, () => r.contents)
 }
 
 let make = (initial: 'a): t<'a> => fromRef(ref(initial))
