@@ -9,7 +9,10 @@ let make = (initial: 'a): t<'a> => fromRef(ref(initial))
 
 let use = (f: unit => 'a) => Signal_Internal.use(() => make(f()))
 
-let set: (t<'a>, 'a) => unit = (fa, a) => Signal_Sig.transaction(() => fst(fa)()(a))
+let set: (t<'a>, 'a) => unit = (fa, a) => Signal_Sig.transaction(() => {
+  let g = fst(fa)()
+  g(a)
+})
 
 let imap = (fa: t<'a>, f: 'a => 'b, g: 'b => 'a): t<'b> => {
   let (set, x) = fa
