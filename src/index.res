@@ -48,7 +48,7 @@ module TestComponent = {
         onClick={_ =>
           field
           ->Sig.get
-          ->Belt.Option.forEach(x => selections->Arr.update(xs => xs->Js.Array2.push(x)->ignore))}>
+          ->Belt.Option.forEach(x => selections->Arr.update(xs => xs->Js.Array2.push(ref(x))->ignore))}>
         {`Add`->React.string}
       </button>
       <br />
@@ -58,7 +58,7 @@ module TestComponent = {
             switch field->Sig.get {
             | None => ()
             | Some(x) =>
-              xs->Js.Array2.removeFromInPlace(~pos=xs->Js.Array2.findIndex(y => y == x))->ignore
+              xs->Js.Array2.removeFromInPlace(~pos=xs->Js.Array2.findIndex(y => y.contents == x))->ignore
             }
           )}>
         {`Remove`->React.string}

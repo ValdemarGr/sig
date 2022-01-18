@@ -1,18 +1,17 @@
-type sig<'a, 'b> = unit => ('a, 'b)
+type sig<'a, 'b> = (unit => 'a, unit => 'b)
 
 type t<'a> = sig<'a, 'a>
 
-let get: sig<_, 'a> => 'a = fa => snd(fa())
+let get: sig<_, 'a> => 'a = fa => snd(fa)()
 
-let const = (x: 'a): t<'a> => () => (x, x)
+let const = (x: 'a): t<'a> => (() => x, () => x)
 
 let suspend = (f: unit => 'a): (unit => 'a) => Signal_MobX.computed(f)
 
-let make = (f: unit => 'a): t<'a> =>
-  suspend(() => {
-    let x = f()
-    (x, x)
-  })
+let make = (f: unit => 'a): t<'a> => {
+    let o = suspend(() => f())
+    (o, o)
+  }
 
 let toSig = (fa: sig<_, 'a>): t<'a> => make(() => get(fa))
 
@@ -24,12 +23,16 @@ let tuple = (fa, fb) => make(() => (get(fa), get(fb)))
 
 let useTuple = (fa, fb) => Signal_Internal.use(() => tuple(fa, fb))
 
-let map = (fa: sig<_, 'a>, f: 'a => 'b): t<'b> => make(() => f(snd(fa())))
+let map = (fa: sig<_, 'a>, f: 'a => 'b): t<'b> => make(() => f(get(fa)))
 
 let useMap = (fa, f) => Signal_Internal.use(() => map(fa, f))
 
-let flatMap: (sig<_, 'a>, 'a => sig<'w, 'b>) => sig<'w, 'b> = (fa, f) =>
-  suspend(() => f(snd(fa()))())
+let flatMap = (fa: sig<_, 'a>, f: 'a => sig<'w, 'b>): sig<'w, 'b> => {
+  let base = suspend(() => f(get(fa)))
+  let l = suspend(() => fst(base())())
+  let r = suspend(() => snd(base())())
+  (l, r)
+}
 
 let useFlatMap = (fa, f) => Signal_Internal.use(() => flatMap(fa, f))
 
@@ -57,7 +60,7 @@ let effect = (fa: sig<_, 'a>, f: 'a => option<unit => unit>): (unit => unit) => 
   let clean = Signal_MobX.autorun(() => {
     lastState.contents()
     lastState := (() => ())
-    let x = snd(fa())
+    let x = get(fa)
     let c = f(x)->Belt.Option.getWithDefault(() => ())
     lastState := c
   })
@@ -102,7 +105,7 @@ let useTuple7 = (fa, fb, fc, fd, fe, ff, fg) =>
 let map2 = (fa: sig<_, 'a>, fb: sig<_, 'b>, f: ('a, 'b) => 'c): t<'c> =>
   make(() => f(get(fa), get(fb)))
 
-let useMap2 = (fa, fb, f) => Signal_Internal.use(() => map(fa, fb, f))
+let useMap2 = (fa, fb, f) => Signal_Internal.use(() => map2(fa, fb, f))
 
 let map3 = (fa, fb, fc, f) => make(() => f(get(fa), get(fb), get(fc)))
 

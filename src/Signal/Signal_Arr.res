@@ -1,21 +1,19 @@
 open Belt
 
-type t<'a> = Signal_Sig.sig<array<'a>, array<'a>>
+type t<'a> = Signal_Sig.sig<array<ref<'a>>, array<'a>>
 
 let make = (initial: array<'a>): t<'a> => {
-  let o = Signal_MobX.observable(initial)
-  () => (o, o)
+  let o = Signal_MobX.observable(initial->Array.map(ref))
+  (() => o, () => o->Array.map(x => x.contents))
 }
 
 let use = (f: unit => array<'a>) => Signal_Internal.use(() => make(f()))
 
-let update: (t<'a>, array<'a> => 'b) => 'b = (fa, f) => Signal_Sig.transaction(() => f(fst(fa())))
+let update: (t<'a>, array<ref<'a>> => 'b) => 'b = (fa, f) => Signal_Sig.transaction(() => f(fst(fa)()))
 
 let set = (fa: t<'a>, i, a): bool =>
   fa->update(xs => xs->Array.get(i)->Option.map(x => x := a)->Option.isSome)
 
-// updates whenever the array's structure changes in any way, that is, xs[i] updates whenever xs[0] ... xs[len(xs)-1] updates
-// if you wish to only listen to updates at position i, use either a Dict or consider a type of Arr.t<Ref.t<'a>>
 let get = (fa: t<'a>, i) => fa->Signal_Sig.map(xs => xs->Array.get(i))
 
 let getUnsafe = (fa: t<'a>, i) =>
