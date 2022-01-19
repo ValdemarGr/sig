@@ -9,3 +9,11 @@ let use = (f: unit => Js.Dict.t<'a>) => Signal_Internal.use(() => make(f()))
 
 let update: (t<'a>, Js.Dict.t<'a> => unit) => unit = (fa, f) =>
   Signal_Sig.transaction(() => f(snd(fa)()))
+
+let set = (fa, k, v) => fa->update(d => d->Js.Dict.set(k, v))
+
+let get = (fa, k) => fa->Signal_Sig.map(d => d->Js.Dict.get(k))
+
+let useGet = (fa, k) => Signal_Internal.use(() => get(fa, k))
+
+let remove = (fa, k) => fa->update(d => Js.Dict.unsafeDeleteKey(. d, k))
