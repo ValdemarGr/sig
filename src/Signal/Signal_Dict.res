@@ -16,4 +16,10 @@ let get = (fa, k) => fa->Signal_Sig.map(d => d->Js.Dict.get(k))
 
 let useGet = (fa, k) => Signal_Internal.use(() => get(fa, k))
 
-let remove = (fa, k) => fa->update(d => Js.Dict.unsafeDeleteKey(. d, k))
+module Internal = {
+  external unsafeCastDictValues: Js.Dict.t<'a> => Js.Dict.t<string> = "%identity"
+}
+
+let remove = (fa: t<'a>, k: string) => {
+  fa->update(d => Js.Dict.unsafeDeleteKey(. d->Internal.unsafeCastDictValues, k))
+}
