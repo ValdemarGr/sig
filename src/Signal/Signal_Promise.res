@@ -26,8 +26,7 @@ module PromiseIntegration = (PromiseImplementation: Sync) => {
     })
     ->ignore
 
-  let fromPromise = (fa: Signal_Ref.t<p<'a>>, p: Promise.t<'a>) =>
-    fromPromiseWhen(fa, p, _ => true)
+  let fromPromise = (fa: Signal_Ref.t<p<'a>>, p: Promise.t<'a>) => fromPromiseWhen(fa, p, _ => true)
 
   let useFromCancellablePromise = (fa: Signal_Sig.t<Promise.t<'a>>): Signal_Sig.t<p<'a>> => {
     let state = Signal_Ref.use(() => PromiseImplementation.return())
@@ -43,6 +42,11 @@ module PromiseIntegration = (PromiseImplementation: Sync) => {
     state->Signal_Sig.map(x => x)
   }
 
-  let useAsync = (fa, f) => 
-    fa->Signal_Sig.useMap(f)->useFromCancellablePromise
+  let useAsync = (fa, f) => fa->Signal_Sig.useMap(f)->useFromCancellablePromise
+
+  let manageEffect = (fa, f) => {
+    let p = f()
+    fa->Signal_Ref.set(PromiseImplementation.return())
+    fromPromise(fa, p)
+  }
 }
