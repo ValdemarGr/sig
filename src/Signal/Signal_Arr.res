@@ -9,7 +9,27 @@ let make = (initial: array<'a>): t<'a> => {
 
 let use = (f: unit => array<'a>) => Signal_Internal.use(() => make(f()))
 
-let update: (t<'a>, array<ref<'a>> => 'b) => 'b = (fa, f) => Signal_Sig.transaction(() => f(fst(fa)()))
+let update: (t<'a>, array<ref<'a>> => 'b) => 'b = (fa, f) =>
+  Signal_Sig.transaction(() => f(fst(fa)()))
+
+let pushMany = (fa: t<'a>, ys: array<'a>) =>
+  fa->update(xs => {
+    let news = Signal_MobX.observable(ys->Array.map(ref))
+    xs->Js.Array2.pushMany(news)
+  })
+
+let push = (fa, x) => pushMany(fa, [x])
+
+let unsiftMany = (fa: t<'a>, ys: array<'a>) =>
+  fa->update(xs => {
+    let news = Signal_MobX.observable(ys->Array.map(ref))
+    xs->Js.Array2.unshiftMany(news)
+  })
+
+let unshift = (fa, x) => unsiftMany(fa, [x])
+
+let shift = (fa: t<'a>) =>
+  Signal_Sig.make(() => fa->update(xs => xs->Js.Array2.shift)->Belt.Option.map(x => x.contents))
 
 let set = (fa: t<'a>, i, a): bool =>
   fa->update(xs => xs->Array.get(i)->Option.map(x => x := a)->Option.isSome)
