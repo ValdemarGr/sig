@@ -9,9 +9,9 @@ let const = (x: 'a): t<'a> => (() => x, () => x)
 let suspend = (f: unit => 'a): (unit => 'a) => Signal_MobX.computed(f)
 
 let make = (f: unit => 'a): t<'a> => {
-    let o = suspend(() => f())
-    (o, o)
-  }
+  let o = suspend(() => f())
+  (o, o)
+}
 
 let toSig = (fa: sig<_, 'a>): t<'a> => make(() => get(fa))
 
@@ -115,8 +115,7 @@ let map4 = (fa, fb, fc, fd, f) => make(() => f(get(fa), get(fb), get(fc), get(fd
 
 let useMap4 = (fa, fb, fc, fd, f) => Signal_Internal.use(() => map4(fa, fb, fc, fd, f))
 
-let map5 = (fa, fb, fc, fd, fe, f) =>
-  make(() => f(get(fa), get(fb), get(fc), get(fd), get(fe)))
+let map5 = (fa, fb, fc, fd, fe, f) => make(() => f(get(fa), get(fb), get(fc), get(fd), get(fe)))
 
 let useMap5 = (fa, fb, fc, fd, fe, f) => Signal_Internal.use(() => map5(fa, fb, fc, fd, fe, f))
 
@@ -165,3 +164,67 @@ let useEffect7 = (fa, fb, fc, fd, fe, ff, fg, f) =>
   useEffect(useTuple7(fa, fb, fc, fd, fe, ff, fg), ((a, b, c, d, e, h, g)) =>
     f(a, b, c, d, e, h, g)
   )
+
+module Option = {
+  let fold = (fa: sig<_, option<'a>>, def: 'b, f: 'a => 'b) =>
+    map(fa, Belt.Option.mapWithDefault(_, def, f))
+
+  let useFold = (fa, def, f) => useMap(fa, Belt.Option.mapWithDefault(_, def, f))
+
+  let semiflatMap = (fa: sig<_, option<'a>>, f: 'a => t<'b>): t<option<'b>> =>
+    flatMap(fa, Belt.Option.mapWithDefault(_, const(None), x => map(f(x), x => Some(x))))
+
+  let useSemiflatMap = (fa, f) => Signal_Internal.use(() => semiflatMap(fa, f))
+
+  let subflatMap = (fa: sig<_, option<'a>>, f: 'a => option<'b>): t<option<'b>> =>
+    map(fa, Belt.Option.flatMap(_, f))
+
+  let useSubflatMap = (fa, f) => Signal_Internal.use(() => subflatMap(fa, f))
+
+  let flatMapF = (fa: sig<_, option<'a>>, f: 'a => t<option<'b>>) =>
+    flatMap(fa, Belt.Option.mapWithDefault(_, const(None), f))
+
+  let useFlatMapF = (fa, f) => Signal_Internal.use(() => flatMapF(fa, f))
+
+  let map = (fa: sig<_, option<'a>>, f: 'a => 'b): t<option<'b>> => map(fa, Belt.Option.map(_, f))
+
+  let useMap = (fa: sig<_, option<'a>>, f) => useMap(fa, Belt.Option.map(_, f))
+}
+
+module Result = {
+  let fold = (fa: sig<_, Belt.Result.t<'a, _>>, def: 'b, f: 'a => 'b) =>
+    map(fa, Belt.Result.mapWithDefault(_, def, f))
+
+  let useFold = (fa, def, f) => useMap(fa, Belt.Result.mapWithDefault(_, def, f))
+
+  let semiflatMap = (fa: sig<_, Belt.Result.t<'a, 'e>>, f: 'a => t<'b>): t<Belt.Result.t<'b, 'e>> =>
+    flatMap(fa, x =>
+      switch x {
+      | Belt.Result.Ok(x) => f(x)->map(x => Belt.Result.Ok(x))
+      | e => const(e)
+      }
+    )
+
+  let useSemiflatMap = (fa, f) => Signal_Internal.use(() => semiflatMap(fa, f))
+
+  let subflatMap = (fa: sig<_, Belt.Result.t<'a, 'e>>, f: 'a => Belt.Result.t<'b, 'e>): t<
+    Belt.Result.t<'b, 'e>,
+  > => map(fa, Belt.Result.flatMap(_, f))
+
+  let useSubflatMap = (fa, f) => Signal_Internal.use(() => subflatMap(fa, f))
+
+  let flatMapF = (fa: sig<_, Belt.Result.t<'a, 'e>>, f: 'a => t<Belt.Result.t<'b, 'e>>) =>
+    flatMap(fa, x =>
+      switch x {
+      | Belt.Result.Ok(x) => f(x)
+      | e => const(e)
+      }
+    )
+
+  let useFlatMapF = (fa, f) => Signal_Internal.use(() => flatMapF(fa, f))
+
+  let map = (fa: sig<_, Belt.Result.t<'a, 'e>>, f: 'a => 'b): t<Belt.Result.t<'b, 'e>> =>
+    map(fa, Belt.Result.map(_, f))
+
+  let useMap = (fa, f) => useMap(fa, Belt.Result.map(_, f))
+}
