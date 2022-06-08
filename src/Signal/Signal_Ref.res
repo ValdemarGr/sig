@@ -17,6 +17,10 @@ let setter = (fa: t<'a>) => {
 
 let useSetter = fa => Signal_Internal.use(() => setter(fa))
 
+// performs the equivalent of setter and then sig get
+// beaware that this adheres to the same rules as Sig.get
+let getSetter = (fa: t<'a>) => setter(fa)->Signal_Sig.get
+
 let set: (t<'a>, 'a) => unit = (fa, a) =>
   Signal_Sig.transaction(() => {
     let g = fst(fa)()

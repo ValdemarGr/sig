@@ -2,6 +2,15 @@ type sig<'a, 'b> = (unit => 'a, unit => 'b)
 
 type t<'a> = sig<'a, 'a>
 
+/*
+ * This escapes the safe land of sig's suspended combinators.
+ * Call this at the "end of the world", e.g a react component's render body,
+ * or as an alternative you can also use the effect combinator which can be used to interact with the
+ * world outside of sig to maybe set a variable's value.
+ *
+ * More technically, this will tell all upstream signals that they should evaluate on changes
+ * such that the resulting value, for more info visit the official mobx documentation.
+ */
 let get: sig<_, 'a> => 'a = fa => snd(fa)()
 
 let const = (x: 'a): t<'a> => (() => x, () => x)
