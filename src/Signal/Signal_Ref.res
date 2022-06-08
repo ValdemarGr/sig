@@ -10,10 +10,7 @@ let make = (initial: 'a): t<'a> => fromRef(ref(initial))
 
 let use = (f: unit => 'a) => Signal_Internal.use(() => make(f()))
 
-let setter = (fa: t<'a>) => {
-  let (suspendedSetter, _) = fa
-  Signal_Sig.make(suspendedSetter)
-}
+let setter = (fa: t<'a>) => Signal_Sig.make(fst(fa))
 
 let useSetter = fa => Signal_Internal.use(() => setter(fa))
 
@@ -35,7 +32,39 @@ let modify = (fa: t<'a>, f: 'a => ('a, 'b)): 'b =>
     b
   })
 
+let modifier = (fa: t<'a>) =>
+  Signal_Sig.make(() => {
+    let (fs, fc) = fa
+    let s = fs()
+    let c = fc()
+    f => {
+      Signal_Sig.transaction(() => {
+        let (a, b) = f(c)
+        s(a)
+        b
+      })
+    }
+  })
+
+let useModifier = (fa: t<'a>) => Signal_Internal.use(() => modifier(fa))
+
 let update = (fa: t<'a>, f: 'a => 'a): unit => modify(fa, a => (f(a), ()))
+
+let updater = (fa: t<'a>) =>
+  Signal_Sig.make(() => {
+    let (fs, fc) = fa
+    let s = fs()
+    let c = fc()
+    f => {
+      Signal_Sig.transaction(() => {
+        let a = f(c)
+        s(a)
+        ()
+      })
+    }
+  })
+
+let useUpdater = (fa: t<'a>) => Signal_Internal.use(() => updater(fa))
 
 let imap = (fa: t<'a>, f: 'a => 'b, g: 'b => 'a): t<'b> => {
   let (set, x) = fa
