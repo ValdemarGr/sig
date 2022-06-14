@@ -85,6 +85,10 @@ let useEffect = (fa: sig<_, 'a>, f: 'a => option<unit => unit>): unit =>
     Some(c)
   })
 
+let arr = (xs: array<t<'a>>): t<array<'a>> => make(() => xs->Js.Array2.map(get))
+
+let useArr = xs => Signal_Internal.use(() => arr(xs))
+
 // Tuple boilerplate
 let tuple3 = (fa, fb, fc) => make(() => (get(fa), get(fb), get(fc)))
 
