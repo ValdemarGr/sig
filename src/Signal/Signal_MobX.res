@@ -1,8 +1,11 @@
 @module("mobx-react-lite")
 external observer: React.component<'props> => React.component<'props> = "observer"
 
-@module("mobx") 
+@module("mobx")
 external observable: 'a => 'a = "observable"
+
+@module("mobx")
+external untracked: (unit => 'a) => unit = "untracked"
 
 @module("mobx")
 external runInAction: (unit => 'a) => 'a = "runInAction"

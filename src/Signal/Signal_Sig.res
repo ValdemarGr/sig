@@ -70,8 +70,12 @@ let effect = (fa: sig<_, 'a>, f: 'a => option<unit => unit>): (unit => unit) => 
     lastState.contents()
     lastState := (() => ())
     let x = get(fa)
-    let c = f(x)->Belt.Option.getWithDefault(() => ())
-    lastState := c
+
+    // don't let f track anything
+    Signal_MobX.untracked(() => {
+      let c = f(x)->Belt.Option.getWithDefault(() => ())
+      lastState := c
+    })
   })
   () => {
     lastState.contents()
