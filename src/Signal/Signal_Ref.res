@@ -10,6 +10,17 @@ let make = (initial: 'a): t<'a> => fromRef(ref(initial))
 
 let use = (f: unit => 'a) => Signal_Internal.use(() => make(f()))
 
+let map = (fa: t<'a>, f: 'a => 'b, modify: ('a, 'b) => 'a): t<'b> => {
+  let (s, g) = fa
+
+  let g2 = Signal_Sig.suspend(() => f(g()))
+  let s2 = ((), b: 'b) => Signal_Sig.transaction(() => s()(modify(g(), b)))
+
+  (s2, g2)
+}
+
+let useMap = (fa, f, modify) => Signal_Internal.use(() => map(fa, f, modify))
+
 let setter = (fa: t<'a>) => Signal_Sig.make(fst(fa))
 
 let useSetter = fa => Signal_Internal.use(() => setter(fa))
@@ -66,11 +77,6 @@ let updater = (fa: t<'a>) =>
 
 let useUpdater = (fa: t<'a>) => Signal_Internal.use(() => updater(fa))
 
-let imap = (fa: t<'a>, f: 'a => 'b, g: 'b => 'a): t<'b> => {
-  let (set, x) = fa
-  let s = ((), b) => set()(g(b))
-  let v = Signal_Sig.suspend(() => f(x()))
-  (s, v)
-}
+let imap = (fa: t<'a>, f: 'a => 'b, g: 'b => 'a): t<'b> => map(fa, f, (_, b) => g(b))
 
 let useImap = (fa, f, g) => Signal_Internal.use(() => imap(fa, f, g))
